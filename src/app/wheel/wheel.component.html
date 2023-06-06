@@ -1,0 +1,47 @@
+<div class="grid-container">
+  <div class="grid-child">
+    <!--https://codesandbox.io/s/bold-cray-nl8s5?file=/src/app/app.component.ts:677-855-->
+    <!--https://github.com/Sayegh7/ngx-wheel-->
+    <ngx-wheel
+      Roulette
+      [width]="400"
+      [height]="400"
+      [spinDuration]="4"
+      [items]="wheelItems"
+      [innerRadius]="20"
+      [spinAmount]="5"
+      [textOrientation]="textOrientation"
+      [textAlignment]="textAlignment"
+      pointerStrokeColor="black"
+      pointerFillColor="gold"
+      [idToLandOn]="idToLandOn"
+      (onSpinEmit)="spin()"
+      (onSpinComplete)="afterWheel()"
+    ></ngx-wheel>
+  </div>
+
+  <div class="grid-child">
+    <h1>{{ title }}</h1>
+    <mat-list>
+      <mat-list-item *ngFor="let user of users">
+        <mat-checkbox
+          mat-list-icon
+          [checked]="isSelected(user)"
+          (change)="toggle(user)"
+        >
+          {{ user.id }}
+        </mat-checkbox>
+
+        <!-- <button mat-icon-button [matMenuTriggerFor]="itemMenu">
+          <mat-icon> more_vert </mat-icon>
+        </button> -->
+        <mat-divider></mat-divider>
+      </mat-list-item>
+    </mat-list>
+  </div>
+
+  <!-- <div class="reset">
+  <button (click)="resetWheel()">Reset</button>
+  <button (click)="configureWheelItems()">Configure</button>
+</div> -->
+</div>
