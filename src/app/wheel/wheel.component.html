@@ -13,7 +13,7 @@
       [textOrientation]="textOrientation"
       [textAlignment]="textAlignment"
       pointerStrokeColor="black"
-      pointerFillColor="gold"
+      pointerFillColor="black"
       [idToLandOn]="idToLandOn"
       (onSpinEmit)="spin()"
       (onSpinComplete)="afterWheel()"
@@ -22,6 +22,11 @@
 
   <div class="grid-child">
     <h1>{{ title }}</h1>
+    <label for="sel-decision-type">What's your decision for:</label>
+    <select id="sel-decision-type" (change)="decisionChange($event)">
+      <option value="" default>Stand Up</option>
+      <option value="AdHoc">Ad-Hoc</option>
+    </select>
     <mat-list>
       <mat-list-item *ngFor="let user of users">
         <mat-checkbox

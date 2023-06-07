@@ -75,8 +75,6 @@ export class UserDao {
   }
 
   async recreateUsers(users: User[]) {
-    console.debug('Recreating Users');
-
     var operations: OperationInput[] = (await this.getAll()).map((user) => {
       return {
         operationType: 'Delete',
@@ -84,9 +82,6 @@ export class UserDao {
         id: user.id!,
       };
     });
-
-    console.debug('Deleting Users');
-    //await this.container.items.bulk(operations, { continueOnError: false });
 
     operations = operations.concat(
       users.map((user) => {
@@ -102,7 +97,6 @@ export class UserDao {
       })
     );
 
-    console.debug('Creating Users');
     const result = await this.container.items.bulk(operations, {
       continueOnError: false,
     });

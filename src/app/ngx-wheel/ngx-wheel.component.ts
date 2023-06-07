@@ -132,10 +132,10 @@ export class NgxWheelComponent implements OnInit, AfterViewInit {
       c.strokeStyle = this.pointerStrokeColor;
       c.fillStyle = this.pointerFillColor;
       c.beginPath();
-      c.moveTo(this.width / 2 - 20, 2);
-      c.lineTo(this.width / 2 + 20, 2);
-      c.lineTo(this.width / 2, 42);
-      c.lineTo(this.width / 2 - 20, 2);
+      c.moveTo(this.width / 2 - 40, 2);
+      c.lineTo(this.width / 2 + 40, 2);
+      c.lineTo(this.width / 2, 84);
+      c.lineTo(this.width / 2 - 40, 2);
       c.stroke();
       c.fill();
       c.restore();

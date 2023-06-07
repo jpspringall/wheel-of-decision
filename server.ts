@@ -26,13 +26,6 @@ export function app() {
     ? join(process.cwd(), 'dist/browser')
     : join(process.cwd(), '../../dist/browser');
   const indexHtml = 'index.html';
-  // const indexHtml = existsSync(join(distFolder, 'index.original.html'))
-  //   ? 'index.original.html'
-  //   : 'index';
-
-  console.log('distFolder', distFolder);
-  console.log('distFoldercwd', join(process.cwd(), 'dist/browser'));
-  console.log('distFolderdirname', join(__dirname, 'dist/browser'));
 
   server.use(bodyParser.json());
   server.use(bodyParser.urlencoded({ extended: false }));
@@ -48,8 +41,6 @@ export function app() {
 
   server.set('view engine', 'html');
   server.set('views', distFolder);
-
-  console.log('env', envInterface);
 
   const options: CosmosClientOptions = {
     endpoint: process.env['COSMOS_DB_HOST'] || envInterface.host,

@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Observable, take } from 'rxjs';
+import { take } from 'rxjs';
 import { User } from 'src/models/user.model';
 import {
   NgxWheelComponent,
@@ -22,26 +22,44 @@ export class WheelComponent implements OnInit {
   wheelItems: any[] = [];
   textOrientation: TextOrientation = TextOrientation.HORIZONTAL;
   textAlignment: TextAlignment = TextAlignment.OUTER;
+  decisionType: string = '';
   constructor(private userService: UserService) {
-    this.getUsers$()
+    this.getUsers();
+  }
+
+  updateUsers() {
+    if (this.shouldCallService()) {
+      this.userService
+        .setUsers(this.users)
+        .pipe(take(1))
+        .subscribe(() => {});
+    }
+  }
+
+  ngOnInit() {}
+
+  shouldCallService() {
+    return this.decisionType == '';
+  }
+
+  decisionChange(event: any) {
+    this.decisionType = event.target.value;
+    if (this.shouldCallService()) {
+      this.getUsers();
+    } else {
+      this.users.forEach((u) => (u.spun = false));
+      this.configureWheelItems();
+    }
+  }
+
+  getUsers() {
+    this.userService
+      .getUsers()
       .pipe(take(1))
       .subscribe((value: User[]) => {
         this.users = value;
         this.configureWheelItems();
       });
-  }
-
-  updateUsers() {
-    this.userService
-      .setUsers(this.users)
-      .pipe(take(1))
-      .subscribe(() => {});
-  }
-
-  ngOnInit() {}
-
-  getUsers$(): Observable<User[]> {
-    return this.userService.getUsers();
   }
 
   isSelected(user: User) {
@@ -57,7 +75,6 @@ export class WheelComponent implements OnInit {
 
   configureWheelItems() {
     const colors = ['Red', 'Green', 'Blue', 'Purple'];
-    console.log('configureWheelItems users', this.users);
     this.wheelItems = this.users
       .filter((f) => f.spun == false)
       .map((user, i) => ({
@@ -87,7 +104,6 @@ export class WheelComponent implements OnInit {
     if (this.users.every((user) => user.spun)) {
       this.users.forEach((user) => (user.spun = false));
     }
-
     this.updateUsers();
   }
 }
