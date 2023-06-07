@@ -42,6 +42,8 @@ export function app() {
   server.set('view engine', 'html');
   server.set('views', distFolder);
 
+  console.log('production', envInterface.production);
+
   const options: CosmosClientOptions = {
     endpoint: process.env['COSMOS_DB_HOST'] || envInterface.host,
     key: process.env['COSMOS_DB_AUTH_KEY'] || envInterface.authKey,
