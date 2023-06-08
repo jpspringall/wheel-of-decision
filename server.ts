@@ -72,6 +72,10 @@ export function app() {
     userList.recreateUsers(req, res).catch(next)
   );
 
+  server.get('/ping', (req, res) => {
+    res.sendStatus(200);
+  });
+
   server.get('/api/**', (req, res) => {
     res.status(404).send('data requests are not yet supported');
   });
