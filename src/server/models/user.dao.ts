@@ -6,12 +6,12 @@ import {
 } from '@azure/cosmos';
 import { User } from 'src/models/user.model';
 
-const partitionKeyName = '/key';
-const partitionKeyValue = 'user';
+const partitionKeyName = 'databaseName';
 export class UserDao {
   client: CosmosClient;
   databaseId: string;
   collectionId: string;
+  partitionKeyValue: string;
   database: Database;
   container: Container;
   /**
@@ -19,19 +19,23 @@ export class UserDao {
    * @param {CosmosClient} cosmosClient
    * @param {string} databaseId
    * @param {string} containerId
+   * @param {string} partitionKeyValue
    */
   constructor({
     cosmosClient,
     databaseId,
     containerId,
+    partitionKeyValue,
   }: {
     cosmosClient: CosmosClient;
     databaseId: string;
     containerId: string;
+    partitionKeyValue: string;
   }) {
     this.client = cosmosClient;
     this.databaseId = databaseId;
     this.collectionId = containerId;
+    this.partitionKeyValue = partitionKeyValue;
     this.database = null as any;
     this.container = null as any;
   }
@@ -47,7 +51,7 @@ export class UserDao {
     const coResponse = await this.database.containers.createIfNotExists({
       id: this.collectionId,
       partitionKey: {
-        paths: [partitionKeyName],
+        paths: ['/'.concat(partitionKeyName)],
       },
     });
     this.container = coResponse.container;
@@ -78,7 +82,7 @@ export class UserDao {
     var operations: OperationInput[] = (await this.getAll()).map((user) => {
       return {
         operationType: 'Delete',
-        partitionKey: partitionKeyValue,
+        partitionKey: this.partitionKeyValue,
         id: user.id!,
       };
     });
@@ -87,11 +91,11 @@ export class UserDao {
       users.map((user) => {
         return {
           operationType: 'Create',
-          partitionKey: partitionKeyValue,
+          partitionKey: this.partitionKeyValue,
           resourceBody: {
             id: user.id,
             spun: user.spun,
-            key: partitionKeyValue,
+            [partitionKeyName]: this.partitionKeyValue,
           },
         };
       })

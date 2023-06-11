@@ -54,6 +54,7 @@ export function app() {
     cosmosClient,
     databaseId: environment.databaseId,
     containerId: environment.containerId,
+    partitionKeyValue: environment.partitionKeyValue,
   });
   const userList = new UserList(userDao);
   userDao.init().catch((err) => {
