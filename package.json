@@ -13,7 +13,7 @@
     "dev:ssr": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 ng run wheel-of-decision:serve-ssr",
     "serve:ssr": "node dist/server/main.js",
     "build:ssr": "ng build --configuration production && ng run wheel-of-decision:server",
-    "build:publish": "docker build -t jpspringall/wheel-of-decision:latest --push .",
+    "build:publish": "docker build -f .\\docker\\Dockerfile -t jpspringall/wheel-of-decision:latest --push .",
     "prerender": "ng run wheel-of-decision:prerender"
   },
   "private": true,

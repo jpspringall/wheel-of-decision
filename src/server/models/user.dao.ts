@@ -64,7 +64,7 @@ export class UserDao {
       throw new Error('Collection is not initialized.');
     }
     const { resources } = await this.container.items
-      .query(querySpec)
+      .query(querySpec, { partitionKey: this.partitionKeyValue })
       .fetchAll();
   }
 
@@ -74,7 +74,9 @@ export class UserDao {
       throw new Error('Collection is not initialized.');
     }
 
-    const { resources } = await this.container.items.readAll().fetchAll();
+    const { resources } = await this.container.items
+      .readAll({ partitionKey: this.partitionKeyValue })
+      .fetchAll();
     return resources;
   }
 

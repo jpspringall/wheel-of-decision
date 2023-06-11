@@ -13,8 +13,8 @@ RUN npm run build:ssr
 #https://blog.kloud.com.au/2017/08/22/preparing-your-docker-container-for-azure-app-services/
 FROM keymetrics/pm2:16-alpine
 COPY --from=builder /usr/src/app/dist /dist
-COPY sshd_config /etc/ssh/
-COPY ecosystem.config.js /
+COPY docker/sshd_config /etc/ssh/
+COPY docker/ecosystem.config.js /pm2/
 # Start and enable SSH
 RUN apk add openssh \
     && echo "root:Docker!" | chpasswd \
@@ -24,4 +24,4 @@ RUN apk add openssh \
 EXPOSE 2222 
 # Web App
 EXPOSE 4000
-CMD [ "pm2-runtime", "start","/ecosystem.config.js" ]
+CMD [ "pm2-runtime", "start","/pm2/ecosystem.config.js" ]
