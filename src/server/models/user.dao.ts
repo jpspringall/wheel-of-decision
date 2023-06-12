@@ -96,7 +96,7 @@ export class UserDao {
           partitionKey: this.partitionKeyValue,
           resourceBody: {
             id: user.id,
-            spun: user.spun,
+            toSpin: user.toSpin,
             [partitionKeyName]: this.partitionKeyValue,
           },
         };

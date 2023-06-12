@@ -1,15 +1,16 @@
+<!--https://coder-coder.com/display-divs-side-by-side/-->
 <div class="grid-container">
-  <div class="grid-child">
+  <div>
     <!--https://codesandbox.io/s/bold-cray-nl8s5?file=/src/app/app.component.ts:677-855-->
     <!--https://github.com/Sayegh7/ngx-wheel-->
     <ngx-wheel
       Roulette
-      [width]="400"
-      [height]="400"
+      [width]="600"
+      [height]="600"
       [spinDuration]="4"
       [items]="wheelItems"
       [innerRadius]="20"
-      [spinAmount]="5"
+      [spinAmount]="4"
       [textOrientation]="textOrientation"
       [textAlignment]="textAlignment"
       pointerStrokeColor="black"
@@ -19,34 +20,39 @@
       (onSpinComplete)="afterWheel()"
     ></ngx-wheel>
   </div>
-
-  <div class="grid-child">
+  <div>
     <h1>{{ title }}</h1>
-    <label for="sel-decision-type">What's your decision for:</label>
-    <select id="sel-decision-type" (change)="decisionChange($event)">
-      <option value="" default>Stand Up</option>
-      <option value="AdHoc">Ad-Hoc</option>
-    </select>
+    <mat-form-field>
+      <mat-label>What's your decision for</mat-label>
+      <mat-select
+        (selectionChange)="decisionChange($event)"
+        [(value)]="decisionType"
+      >
+        <mat-option value="" default>Stand Up</mat-option>
+        <mat-option value="AdHoc">Ad-Hoc</mat-option>
+      </mat-select>
+    </mat-form-field>
     <mat-list>
+      <h5 matSubheader>Spinners</h5>
       <mat-list-item *ngFor="let user of users">
+        <button matSuffix mat-icon-button (click)="delete(user)">
+          <mat-icon>delete</mat-icon>
+        </button>
         <mat-checkbox
           mat-list-icon
           [checked]="isSelected(user)"
           (change)="toggle(user)"
         >
-          {{ user.id }}
         </mat-checkbox>
-
-        <!-- <button mat-icon-button [matMenuTriggerFor]="itemMenu">
-          <mat-icon> more_vert </mat-icon>
-        </button> -->
-        <mat-divider></mat-divider>
+        <mat-label matLine>{{ user.id }}</mat-label>
       </mat-list-item>
     </mat-list>
+    <mat-form-field>
+      <mat-label>User to create</mat-label>
+      <input matInput [formControl]="newUser" />
+      <button matSuffix mat-icon-button (click)="add()">
+        <mat-icon>person_add</mat-icon>
+      </button>
+    </mat-form-field>
   </div>
-
-  <!-- <div class="reset">
-  <button (click)="resetWheel()">Reset</button>
-  <button (click)="configureWheelItems()">Configure</button>
-</div> -->
 </div>
