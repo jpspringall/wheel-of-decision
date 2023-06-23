@@ -9,13 +9,12 @@ import { AppServerModule } from './src/main.server';
 
 import { CosmosClient, CosmosClientOptions } from '@azure/cosmos';
 
+import * as bodyParser from 'body-parser';
 import { existsSync } from 'fs';
 import { UserDao } from 'src/server/models/user.dao';
 import { UserList } from 'src/server/routes/user.list';
 import { environment } from './src/environments/environment';
 import { EnvironmentInterface } from './src/environments/environment.interface';
-
-import bodyParser = require('body-parser');
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app() {
@@ -54,7 +53,6 @@ export function app() {
     cosmosClient,
     databaseId: environment.databaseId,
     containerId: environment.containerId,
-    partitionKeyValue: environment.partitionKeyValue,
   });
   const userList = new UserList(userDao);
   userDao.init().catch((err) => {
@@ -65,7 +63,7 @@ export function app() {
     process.exit(1);
   });
 
-  server.get('/api/users', (req, res, next) =>
+  server.get('/api/users/:partitionKeyValue', (req, res, next) =>
     userList.getUsers(req, res).catch(next)
   );
 

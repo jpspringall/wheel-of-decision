@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
-import { User } from 'src/models/user.model';
+import { UserList } from 'src/models/user.list.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -16,13 +16,20 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  getUsers(): Observable<User[]> {
+  getUsers(partitionKeyValue: string): Observable<UserList> {
     return this.http
-      .get<User[]>(this.usersUrl)
-      .pipe(catchError(this.handleError<User[]>('getUsers', [])));
+      .get<UserList>(`${this.usersUrl}/${partitionKeyValue}`)
+      .pipe(
+        catchError(
+          this.handleError<UserList>('getUsers', {
+            partitionKeyValue: '',
+            users: [],
+          })
+        )
+      );
   }
 
-  setUsers(users: User[]): Observable<boolean> {
+  setUsers(users: UserList): Observable<boolean> {
     return this.http.post<void>(this.usersUrl, users).pipe(
       map(() => true),
       catchError(this.handleError<boolean>('setUsers', false))

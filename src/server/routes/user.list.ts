@@ -10,8 +10,9 @@ export class UserList {
     this.userDao = userDao;
   }
   async getUsers(req: any, res: any) {
-    const items = await this.userDao.getAll();
-    res.json(items);
+    const partitionKeyValue = req.params.partitionKeyValue;
+    const items = await this.userDao.getAll(partitionKeyValue);
+    res.json({ partitionKeyValue, users: items });
   }
 
   async recreateUsers(req: any, res: any) {

@@ -4,14 +4,13 @@ import {
   Database,
   OperationInput,
 } from '@azure/cosmos';
-import { User } from 'src/models/user.model';
+import { UserList } from 'src/models/user.list.model';
 
 const partitionKeyName = 'databaseName';
 export class UserDao {
   client: CosmosClient;
   databaseId: string;
   collectionId: string;
-  partitionKeyValue: string;
   database: Database;
   container: Container;
   /**
@@ -19,23 +18,19 @@ export class UserDao {
    * @param {CosmosClient} cosmosClient
    * @param {string} databaseId
    * @param {string} containerId
-   * @param {string} partitionKeyValue
    */
   constructor({
     cosmosClient,
     databaseId,
     containerId,
-    partitionKeyValue,
   }: {
     cosmosClient: CosmosClient;
     databaseId: string;
     containerId: string;
-    partitionKeyValue: string;
   }) {
     this.client = cosmosClient;
     this.databaseId = databaseId;
     this.collectionId = containerId;
-    this.partitionKeyValue = partitionKeyValue;
     this.database = null as any;
     this.container = null as any;
   }
@@ -58,46 +53,49 @@ export class UserDao {
     console.debug('Setting up the container...done!');
   }
 
-  async find(querySpec: any) {
+  async find(partitionKeyValue: string, querySpec: any) {
     console.debug('Querying for items from the database');
     if (!this.container) {
       throw new Error('Collection is not initialized.');
     }
     const { resources } = await this.container.items
-      .query(querySpec, { partitionKey: this.partitionKeyValue })
-      .fetchAll();
-  }
-
-  async getAll() {
-    console.debug('Querying for items from the database');
-    if (!this.container) {
-      throw new Error('Collection is not initialized.');
-    }
-
-    const { resources } = await this.container.items
-      .readAll({ partitionKey: this.partitionKeyValue })
+      .query(querySpec, { partitionKey: partitionKeyValue })
       .fetchAll();
     return resources;
   }
 
-  async recreateUsers(users: User[]) {
-    var operations: OperationInput[] = (await this.getAll()).map((user) => {
+  async getAll(partitionKeyValue: string) {
+    console.debug('Querying for items from the database');
+    if (!this.container) {
+      throw new Error('Collection is not initialized.');
+    }
+
+    const { resources } = await this.container.items
+      .readAll({ partitionKey: partitionKeyValue })
+      .fetchAll();
+    return resources;
+  }
+
+  async recreateUsers(userList: UserList) {
+    var operations: OperationInput[] = (
+      await this.getAll(userList.partitionKeyValue)
+    ).map((user) => {
       return {
         operationType: 'Delete',
-        partitionKey: this.partitionKeyValue,
+        partitionKey: userList.partitionKeyValue,
         id: user.id!,
       };
     });
 
     operations = operations.concat(
-      users.map((user) => {
+      userList.users.map((user) => {
         return {
           operationType: 'Create',
-          partitionKey: this.partitionKeyValue,
+          partitionKey: userList.partitionKeyValue,
           resourceBody: {
             id: user.id,
             toSpin: user.toSpin,
-            [partitionKeyName]: this.partitionKeyValue,
+            [partitionKeyName]: userList.partitionKeyValue,
           },
         };
       })

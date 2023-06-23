@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { take } from 'rxjs';
+import { UserList } from 'src/models/user.list.model';
 import { User } from 'src/models/user.model';
 import {
   NgxWheelComponent,
@@ -17,13 +18,13 @@ import { UserService } from '../services/user.service';
 export class WheelComponent implements OnInit {
   @ViewChild(NgxWheelComponent, { static: false })
   wheel!: NgxWheelComponent;
-  title: string = 'Wheel Of Decision';
-  users: User[] = [];
+  title: string = 'Wheels Of Decisions';
+  userList: UserList = { partitionKeyValue: '', users: [] };
   idToLandOn: any;
   wheelItems: any[] = [];
   textOrientation: TextOrientation = TextOrientation.HORIZONTAL;
   textAlignment: TextAlignment = TextAlignment.OUTER;
-  decisionType: string = '';
+  decisionType: string = 'wheel-of-decision-stand-up';
   newUser: FormControl;
   constructor(private userService: UserService) {
     this.newUser = new FormControl();
@@ -33,7 +34,7 @@ export class WheelComponent implements OnInit {
   updateUsers() {
     if (this.shouldCallService()) {
       this.userService
-        .setUsers(this.users)
+        .setUsers(this.userList)
         .pipe(take(1))
         .subscribe(() => {});
     }
@@ -42,26 +43,26 @@ export class WheelComponent implements OnInit {
   ngOnInit() {}
 
   shouldCallService() {
-    return this.decisionType == '';
+    return this.decisionType.length > 0;
   }
 
   decisionChange(event: any) {
     this.decisionType = event.value;
-    //this.decisionType = event.target.value;
     if (this.shouldCallService()) {
       this.getUsers();
     } else {
-      this.users.forEach((u) => (u.toSpin = true));
+      this.userList.users.forEach((u) => (u.toSpin = true));
       this.configureWheelItems();
     }
   }
 
   getUsers() {
     this.userService
-      .getUsers()
+      .getUsers(this.decisionType)
       .pipe(take(1))
-      .subscribe((value: User[]) => {
-        this.users = value.sort(this.userSort);
+      .subscribe((value: UserList) => {
+        this.userList = value;
+        this.userList.users = this.userList.users.sort(this.userSort);
         this.configureWheelItems();
       });
   }
@@ -71,15 +72,15 @@ export class WheelComponent implements OnInit {
   }
 
   toggle(user: User) {
-    var index = this.users.indexOf(user);
-    this.users[index].toSpin = !user.toSpin;
+    var index = this.userList.users.indexOf(user);
+    this.userList.users[index].toSpin = !user.toSpin;
     this.configureWheelItems();
     this.updateUsers();
   }
 
   delete(user: User) {
     if (confirm('Are you sure to delete ' + user.id)) {
-      this.users = this.users
+      this.userList.users = this.userList.users
         .filter((item) => item !== user)
         .sort(this.userSort);
       this.configureWheelItems();
@@ -88,9 +89,9 @@ export class WheelComponent implements OnInit {
   }
 
   add() {
-    if (!this.users.some((s) => s.id == this.newUser.value)) {
-      this.users.push({ id: this.newUser.value, toSpin: true });
-      this.users.sort(this.userSort);
+    if (!this.userList.users.some((s) => s.id == this.newUser.value)) {
+      this.userList.users.push({ id: this.newUser.value, toSpin: true });
+      this.userList.users.sort(this.userSort);
       this.newUser.reset();
       this.configureWheelItems();
       this.updateUsers();
@@ -99,7 +100,7 @@ export class WheelComponent implements OnInit {
 
   configureWheelItems() {
     const colors = ['Red', 'Green', 'Blue', 'Purple'];
-    this.wheelItems = this.users
+    this.wheelItems = this.userList.users
       .filter((f) => f.toSpin === true)
       .map((user, i) => ({
         fillStyle: colors[i % colors.length],
@@ -123,11 +124,12 @@ export class WheelComponent implements OnInit {
   }
 
   afterWheel() {
-    this.users[this.users.findIndex((u) => u.id == this.idToLandOn)].toSpin =
-      false;
+    this.userList.users[
+      this.userList.users.findIndex((u) => u.id == this.idToLandOn)
+    ].toSpin = false;
 
-    if (this.users.every((user) => !user.toSpin)) {
-      this.users.forEach((user) => (user.toSpin = true));
+    if (this.userList.users.every((user) => !user.toSpin)) {
+      this.userList.users.forEach((user) => (user.toSpin = true));
     }
     this.updateUsers();
   }

@@ -28,13 +28,18 @@
         (selectionChange)="decisionChange($event)"
         [(value)]="decisionType"
       >
-        <mat-option value="" default>Stand Up</mat-option>
-        <mat-option value="AdHoc">Ad-Hoc</mat-option>
+        <mat-option value="wheel-of-decision-stand-up" default
+          >Stand Up</mat-option
+        >
+        <mat-option value="wheel-of-decision-spinner-of-the-week"
+          >Spinner Of The Week</mat-option
+        >
+        <mat-option value="">Ad-Hoc</mat-option>
       </mat-select>
     </mat-form-field>
     <mat-list>
       <h5 matSubheader>Spinners</h5>
-      <mat-list-item *ngFor="let user of users">
+      <mat-list-item *ngFor="let user of userList.users">
         <button matSuffix mat-icon-button (click)="delete(user)">
           <mat-icon>delete</mat-icon>
         </button>
