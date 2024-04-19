@@ -99,16 +99,37 @@ export class WheelComponent implements OnInit {
   }
 
   configureWheelItems() {
-    const colors = ['Red', 'Green', 'Blue', 'Purple'];
+    var colors = ['#e6194B',
+    '#3cb44b',
+    '#4363d8',
+    '#f58231',
+    '#f032e6',
+    '#469990',
+    '#9A6324',
+    '#800000',
+    '#000075',
+    '#a9a9a9',
+    '#000000'];
     this.wheelItems = this.userList.users
       .filter((f) => f.toSpin === true)
-      .map((user, i) => ({
-        fillStyle: colors[i % colors.length],
+      .map((user) => {
+        // between min (included) and max (not included):
+        /*
+        function randomNumber(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+        */
+        const colorIndex = Math.floor(Math.random() * (colors.length - 0) + 0);
+        const color = colors[colorIndex]
+        colors.splice(colorIndex, 1);
+
+        return {
+        fillStyle: color,
         text: user.id,
         id: user.id,
         textFillStyle: 'white',
         textFontSize: '16',
-      }));
+      }});
     this.resetWheel();
   }
 
