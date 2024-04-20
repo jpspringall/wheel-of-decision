@@ -3,15 +3,47 @@ import { FormControl } from '@angular/forms';
 import { take } from 'rxjs';
 import { UserList } from 'src/models/user.list.model';
 import { User } from 'src/models/user.model';
+
 import {
   NgxWheelComponent,
   TextAlignment,
   TextOrientation,
 } from '../ngx-wheel/ngx-wheel.component';
+
 import { UserService } from '../services/user.service';
+
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-wheel',
+  standalone: true,
+  imports: [
+    CommonModule,
+    NgxWheelComponent,
+    FormsModule, ReactiveFormsModule,
+    MatToolbarModule,
+    MatListModule,
+    MatDividerModule,
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatToolbarModule,
+    MatCheckboxModule,
+    MatSelectModule,
+    MatInputModule
+  ],  
   templateUrl: './wheel.component.html',
   styleUrls: ['./wheel.component.css'],
 })
