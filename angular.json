@@ -75,7 +75,8 @@
               "buildTarget": "wheel-of-decision:build:production"
             },
             "development": {
-              "buildTarget": "wheel-of-decision:build:development"
+              "buildTarget": "wheel-of-decision:build:development",
+              "proxyConfig": "src/proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

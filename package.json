@@ -5,12 +5,13 @@
     "ncu": "ncu",
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "build:dev": "ng build --configuration development",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "dev:ssr": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/wheel-of-decision/server/server.mjs",
-    "build:publish": "docker build -f .\\docker\\Dockerfile -t jpspringall/wheel-of-decision:17 --push .",
-    "serve:ssr:wheel-of-decision": "node dist/wheel-of-decision/server/server.mjs"
+    "ssr:prod": "node dist/wheel-of-decision/server/server.mjs",
+    "ssr:dev": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 node dist/wheel-of-decision/server/server.mjs",
+    "build:publish": "docker build -f .\\docker\\Dockerfile -t jpspringall/wheel-of-decision:17 --push ."
   },
   "private": true,
   "dependencies": {

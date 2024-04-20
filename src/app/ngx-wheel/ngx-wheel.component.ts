@@ -1,4 +1,5 @@
 import {
+  AfterRenderPhase,
   AfterViewInit,
   Component,
   EventEmitter,
@@ -43,7 +44,7 @@ declare let TweenMax: any
   styles: [],
 })
 export class NgxWheelComponent {
-  
+
   @Input() height!: number;
   @Input() idToLandOn: any;
   @Input() width!: number;
@@ -66,21 +67,23 @@ export class NgxWheelComponent {
   isSpinning: boolean = false;
 
   constructor() {
-    afterNextRender(() => { this.loadWheel();});
+    afterNextRender(() => { this.loadWheel(); }, { phase: AfterRenderPhase.Write });
   }
 
   reset() {
-    this.wheel.stopAnimation(false);
-    this.wheel.rotationAngle = 0;
-    this.wheel.ctx.clearRect(
-      0,
-      0,
-      this.wheel.ctx.canvas.width,
-      this.wheel.ctx.canvas.height
-    );
-    this.isSpinning = false;
-    this.completedSpin = false;
-    this.loadWheel();
+    if (this.wheel !== undefined) {
+      this.wheel.stopAnimation(false);
+      this.wheel.rotationAngle = 0;
+      this.wheel.ctx.clearRect(
+        0,
+        0,
+        this.wheel.ctx.canvas.width,
+        this.wheel.ctx.canvas.height
+      );
+      this.isSpinning = false;
+      this.completedSpin = false;
+      this.loadWheel();
+    }
   }
 
   loadWheel() {
@@ -101,7 +104,7 @@ export class NgxWheelComponent {
       },
     });
     // @ts-ignore
-    //TweenMax.ticker.addEventListener('tick', this.drawPointer.bind(this));
+    TweenMax.ticker.addEventListener('tick', this.drawPointer.bind(this));
   }
 
   spinEmit() {
