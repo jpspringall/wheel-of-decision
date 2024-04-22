@@ -151,7 +151,8 @@ export class WheelComponent implements OnInit {
           return Math.random() * (max - min) + min;
         }
         */
-        const colorIndex = Math.floor(Math.random() * (colors.length - 0) + 0);
+        //const colorIndex = Math.floor(Math.random() * (colors.length - 0) + 0);
+        const colorIndex = 0;
         const color = colors[colorIndex]
         colors.splice(colorIndex, 1);
 
