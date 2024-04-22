@@ -8,7 +8,7 @@ module.exports = {
     {
       name: "app",
       cwd: "/",
-      script: "/dist/server/main.js",
+      script: "/dist/wheel-of-decision/server/server.mjs",
     },
   ],
 };

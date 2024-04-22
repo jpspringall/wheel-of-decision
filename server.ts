@@ -1,45 +1,34 @@
-import 'zone.js/node';
-
-import { ngExpressEngine } from '@nguniversal/express-engine';
-import * as express from 'express';
-import { join } from 'path';
-
 import { APP_BASE_HREF } from '@angular/common';
-import { AppServerModule } from './src/main.server';
+import { CommonEngine } from '@angular/ssr';
+import express from 'express';
+import { fileURLToPath } from 'node:url';
+import { dirname, join, resolve } from 'node:path';
+import bootstrap from './src/main.server';
 
 import { CosmosClient, CosmosClientOptions } from '@azure/cosmos';
-
-import * as bodyParser from 'body-parser';
-import { existsSync } from 'fs';
-import { UserDao } from 'src/server/models/user.dao';
-import { UserList } from 'src/server/routes/user.list';
 import { environment } from './src/environments/environment';
 import { EnvironmentInterface } from './src/environments/environment.interface';
+import * as bodyParser from 'body-parser';
+import { UserDao } from 'src/server/models/user.dao';
+import { UserList } from 'src/server/routes/user.list';
 
 // The Express app is exported so that it can be used by serverless Functions.
-export function app() {
+export function app(): express.Express {
   const envInterface = environment as EnvironmentInterface;
   const cors = require('cors');
   const server = express();
-  const distFolder = existsSync(join(process.cwd(), 'dist/browser'))
-    ? join(process.cwd(), 'dist/browser')
-    : join(process.cwd(), '../../dist/browser');
-  const indexHtml = 'index.html';
+  const serverDistFolder = dirname(fileURLToPath(import.meta.url));
+  const browserDistFolder = resolve(serverDistFolder, '../browser');
+  const indexHtml = join(serverDistFolder, 'index.server.html');
 
   server.use(bodyParser.json());
   server.use(bodyParser.urlencoded({ extended: false }));
   server.use(cors());
 
-  // Our Universal express-engine (found @ https://github.com/angular/universal/tree/main/modules/express-engine)
-  server.engine(
-    'html',
-    ngExpressEngine({
-      bootstrap: AppServerModule,
-    })
-  );
+  const commonEngine = new CommonEngine();
 
   server.set('view engine', 'html');
-  server.set('views', distFolder);
+  server.set('views', browserDistFolder);
 
   console.log('production', envInterface.production);
 
@@ -72,7 +61,7 @@ export function app() {
   );
 
   server.get('/ping', (req, res) => {
-    res.sendStatus(200);
+    res.sendStatus(400);
   });
 
   server.get('/api/**', (req, res) => {
@@ -83,53 +72,40 @@ export function app() {
     res.status(404).send('data requests are not yet supported');
   });
 
+  // Example Express Rest API endpoints
+  // server.get('/api/**', (req, res) => { });
   // Serve static files from /browser
-  server.get(
-    '*.*',
-    express.static(distFolder, {
-      maxAge: '1y',
-    })
-  );
+  server.get('*.*', express.static(browserDistFolder, {
+    maxAge: '1y'
+  }));
 
-  // All regular routes use the Universal engine
-  server.get('*', (req, res) => {
-    res.render(indexHtml, {
-      req,
-      providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }],
-    });
+  // All regular routes use the Angular engine
+  server.get('*', (req, res, next) => {
+    const { protocol, originalUrl, baseUrl, headers } = req;
+
+    commonEngine
+      .render({
+        bootstrap,
+        documentFilePath: indexHtml,
+        url: `${protocol}://${headers.host}${originalUrl}`,
+        publicPath: browserDistFolder,
+        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+      })
+      .then((html) => res.send(html))
+      .catch((err) => next(err));
   });
-
-  const errorHandler = (error: any, request: any, response: any, _: any) => {
-    // Error handling middleware functionality
-    console.log(`error ${error.message}`); // log the error
-    const status = error.status || 400;
-    // send back an easily understandable error message to the caller
-    response.status(status).send(error.message + '\n' + error.stack);
-  };
-
-  server.use(errorHandler);
 
   return server;
 }
 
-function run() {
+function run(): void {
   const port = process.env['PORT'] || 4000;
 
   // Start up the Node server
   const server = app();
   server.listen(port, () => {
-    console.log(`Node Express server listening on ${port}`);
+    console.log(`Node Express server listening on http://localhost:${port}`);
   });
 }
 
-// Webpack will replace 'require' with '__webpack_require__'
-// '__non_webpack_require__' is a proxy to Node 'require'
-// The below code is to ensure that the server is run only when not requiring the bundle.
-declare const __non_webpack_require__: NodeRequire;
-const mainModule = __non_webpack_require__.main;
-const moduleFilename = (mainModule && mainModule.filename) || '';
-if (moduleFilename === __filename || moduleFilename.includes('iisnode')) {
-  run();
-}
-
-export * from './src/main.server';
+run();
