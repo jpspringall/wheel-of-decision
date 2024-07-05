@@ -1,10 +1,12 @@
 import {
+  AfterRenderPhase,
   AfterViewInit,
   Component,
   EventEmitter,
   Input,
   OnInit,
   Output,
+  afterNextRender,
 } from '@angular/core';
 export interface Item {
   text: string;
@@ -23,8 +25,12 @@ export enum TextOrientation {
   CURVED = 'curved',
 }
 
+declare let Winwheel: any;
+declare let TweenMax: any
+
 @Component({
   selector: 'ngx-wheel',
+  standalone: true,
   template: `
     <canvas
       (click)="!disableSpinOnClick && spinEmit()"
@@ -37,8 +43,7 @@ export enum TextOrientation {
   `,
   styles: [],
 })
-export class NgxWheelComponent implements OnInit, AfterViewInit {
-  constructor() {}
+export class NgxWheelComponent {
 
   @Input() height!: number;
   @Input() idToLandOn: any;
@@ -61,21 +66,46 @@ export class NgxWheelComponent implements OnInit, AfterViewInit {
   completedSpin: boolean = false;
   isSpinning: boolean = false;
 
-  reset() {
-    this.wheel.stopAnimation(false);
-    this.wheel.rotationAngle = 0;
-    this.wheel.ctx.clearRect(
-      0,
-      0,
-      this.wheel.ctx.canvas.width,
-      this.wheel.ctx.canvas.height
-    );
-    this.isSpinning = false;
-    this.completedSpin = false;
-    this.ngAfterViewInit();
+  constructor() {
+    afterNextRender(() => { this.loadWheel(); }, { phase: AfterRenderPhase.Write });
   }
 
-  ngOnInit(): void {}
+  reset() {
+    if (this.wheel !== undefined) {
+      this.wheel.stopAnimation(false);
+      this.wheel.rotationAngle = 0;
+      this.wheel.ctx.clearRect(
+        0,
+        0,
+        this.wheel.ctx.canvas.width,
+        this.wheel.ctx.canvas.height
+      );
+      this.isSpinning = false;
+      this.completedSpin = false;
+      this.loadWheel();
+    }
+  }
+
+  loadWheel() {
+    const segments = this.items;
+    // @ts-ignore
+    this.wheel = new Winwheel({
+      numSegments: segments.length,
+      segments,
+      innerRadius: this.innerRadius || 0,
+      outerRadius: this.height / 2 - 20,
+      centerY: this.height / 2 + 20,
+      textOrientation: this.textOrientation,
+      textAligment: this.textAlignment,
+      animation: {
+        type: 'spinToStop', // Type of animation.
+        duration: this.spinDuration, // How long the animation is to take in seconds.
+        spins: this.spinAmount, // The number of complete 360 degree rotations the wheel is to do.
+      },
+    });
+    // @ts-ignore
+    TweenMax.ticker.addEventListener('tick', this.drawPointer.bind(this));
+  }
 
   spinEmit() {
     this.onSpinEmit.emit(null);
@@ -97,30 +127,10 @@ export class NgxWheelComponent implements OnInit, AfterViewInit {
       this.onSpinComplete.emit(null);
     }, this.spinDuration * 1000);
   }
-  ngAfterViewInit() {
-    const segments = this.items;
-    // @ts-ignore
-    this.wheel = new Winwheel({
-      numSegments: segments.length,
-      segments,
-      innerRadius: this.innerRadius || 0,
-      outerRadius: this.height / 2 - 20,
-      centerY: this.height / 2 + 20,
-      textOrientation: this.textOrientation,
-      textAligment: this.textAlignment,
-      animation: {
-        type: 'spinToStop', // Type of animation.
-        duration: this.spinDuration, // How long the animation is to take in seconds.
-        spins: this.spinAmount, // The number of complete 360 degree rotations the wheel is to do.
-      },
-    });
-    // @ts-ignore
-    TweenMax.ticker.addEventListener('tick', this.drawPointer.bind(this));
-  }
 
   ngOnDestroy() {
     // @ts-ignore
-    TweenMax.ticker.removeEventListener('tick');
+    //TweenMax.ticker.removeEventListener('tick');
   }
 
   drawPointer() {
