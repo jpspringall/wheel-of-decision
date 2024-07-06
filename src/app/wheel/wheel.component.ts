@@ -52,22 +52,23 @@ export class WheelComponent implements OnInit {
   wheel!: NgxWheelComponent;
   title: string = 'Wheels Of Decisions';
   userList: UserList = { partitionKeyValue: '', users: [] };
+  readonly spinDuration: number = 4;
   idToLandOn: any;
   wheelItems: any[] = [];
   textOrientation: TextOrientation = TextOrientation.HORIZONTAL;
   textAlignment: TextAlignment = TextAlignment.OUTER;
   decisionType: string = 'wheel-of-decision-stand-up';
   newUser: FormControl;
-  speech: SpeechSynthesisUtterance;
+  speech!: SpeechSynthesisUtterance;
   constructor(private userService: UserService) {
     this.newUser = new FormControl();
     this.getUsers();
 
-    this.speech = new SpeechSynthesisUtterance();
-    this.speech.rate = 1;
-    this.speech.pitch = 1;
-
     afterNextRender(() => {
+      this.speech = new SpeechSynthesisUtterance();
+      this.speech.rate = 1;
+      this.speech.pitch = 1;
+
       fromEvent(speechSynthesis, 'voiceschanged').pipe(
         map(() => speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().includes('en-gb'))),
         take(1),
@@ -186,10 +187,12 @@ export class WheelComponent implements OnInit {
   }
 
   spin() {
+    const spinDelay = 100
     this.configureWheelItems();
     this.idToLandOn =
       this.wheelItems[Math.floor(Math.random() * this.wheelItems.length)].id;
-    setTimeout(() => this.wheel.spin(), 100);
+    setTimeout(() => this.wheel.spin(), spinDelay);
+    setTimeout(() => this.speak(), (this.spinDuration - 1) * 1000);
   }
 
   afterWheel() {
@@ -202,6 +205,10 @@ export class WheelComponent implements OnInit {
     }
     this.updateUsers();
 
+
+  }
+
+  speak() {
     this.speech.text = this.idToLandOn;
     speechSynthesis.speak(this.speech);
   }
