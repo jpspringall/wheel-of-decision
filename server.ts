@@ -61,7 +61,7 @@ export function app(): express.Express {
   );
 
   server.get('/ping', (req, res) => {
-    res.sendStatus(400);
+    res.sendStatus(200);
   });
 
   server.get('/api/**', (req, res) => {
