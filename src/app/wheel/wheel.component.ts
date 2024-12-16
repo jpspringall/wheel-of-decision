@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { afterNextRender, AfterRenderPhase, Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { take } from 'rxjs';
+import { filter, fromEvent, map, take } from 'rxjs';
 import { UserList } from 'src/models/user.list.model';
 import { User } from 'src/models/user.model';
 
@@ -43,7 +43,7 @@ import { CommonModule } from '@angular/common';
     MatCheckboxModule,
     MatSelectModule,
     MatInputModule
-  ],  
+  ],
   templateUrl: './wheel.component.html',
   styleUrls: ['./wheel.component.css'],
 })
@@ -52,15 +52,30 @@ export class WheelComponent implements OnInit {
   wheel!: NgxWheelComponent;
   title: string = 'Wheels Of Decisions';
   userList: UserList = { partitionKeyValue: '', users: [] };
+  readonly spinDuration: number = 4;
   idToLandOn: any;
   wheelItems: any[] = [];
   textOrientation: TextOrientation = TextOrientation.HORIZONTAL;
   textAlignment: TextAlignment = TextAlignment.OUTER;
   decisionType: string = 'wheel-of-decision-stand-up';
   newUser: FormControl;
+  speech!: SpeechSynthesisUtterance;
   constructor(private userService: UserService) {
     this.newUser = new FormControl();
     this.getUsers();
+
+    afterNextRender(() => {
+      this.speech = new SpeechSynthesisUtterance();
+      this.speech.rate = 1;
+      this.speech.pitch = 1;
+
+      fromEvent(speechSynthesis, 'voiceschanged').pipe(
+        map(() => speechSynthesis.getVoices().filter((voice) => voice.lang.toLowerCase().includes('en-gb'))),
+        take(1),
+        filter((voices) => voices != undefined && voices != null && voices.length > 0)
+      ).subscribe((voices) => this.speech.voice = voices[0]);
+
+    }, { phase: AfterRenderPhase.Write });
   }
 
   updateUsers() {
@@ -68,11 +83,11 @@ export class WheelComponent implements OnInit {
       this.userService
         .setUsers(this.userList)
         .pipe(take(1))
-        .subscribe(() => {});
+        .subscribe();
     }
   }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   shouldCallService() {
     return this.decisionType.length > 0;
@@ -132,16 +147,16 @@ export class WheelComponent implements OnInit {
 
   configureWheelItems() {
     var colors = ['#e6194B',
-    '#3cb44b',
-    '#4363d8',
-    '#f58231',
-    '#f032e6',
-    '#469990',
-    '#9A6324',
-    '#800000',
-    '#000075',
-    '#a9a9a9',
-    '#000000'];
+      '#3cb44b',
+      '#4363d8',
+      '#f58231',
+      '#f032e6',
+      '#469990',
+      '#9A6324',
+      '#800000',
+      '#000075',
+      '#a9a9a9',
+      '#000000'];
     this.wheelItems = this.userList.users
       .filter((f) => f.toSpin === true)
       .map((user) => {
@@ -157,12 +172,13 @@ export class WheelComponent implements OnInit {
         colors.splice(colorIndex, 1);
 
         return {
-        fillStyle: color,
-        text: user.id,
-        id: user.id,
-        textFillStyle: 'white',
-        textFontSize: '16',
-      }});
+          fillStyle: color,
+          text: user.id,
+          id: user.id,
+          textFillStyle: 'white',
+          textFontSize: '16',
+        }
+      });
     this.resetWheel();
   }
 
@@ -171,10 +187,12 @@ export class WheelComponent implements OnInit {
   }
 
   spin() {
+    const spinDelay = 100
     this.configureWheelItems();
     this.idToLandOn =
       this.wheelItems[Math.floor(Math.random() * this.wheelItems.length)].id;
-    setTimeout(() => this.wheel.spin(), 100);
+    setTimeout(() => this.wheel.spin(), spinDelay);
+    setTimeout(() => this.speak(), (this.spinDuration - 1) * 1000);
   }
 
   afterWheel() {
@@ -186,6 +204,13 @@ export class WheelComponent implements OnInit {
       this.userList.users.forEach((user) => (user.toSpin = true));
     }
     this.updateUsers();
+
+
+  }
+
+  speak() {
+    this.speech.text = this.idToLandOn;
+    speechSynthesis.speak(this.speech);
   }
 
   userSort(a: User, b: User) {
